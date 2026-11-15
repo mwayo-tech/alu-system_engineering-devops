@@ -11,7 +11,6 @@ fi
 if ! grep -q "error_page 404" "$CONF"; then
   sed -i 's|server_name _;|server_name _;\n\n\terror_page 404 /404.html;\n\tlocation = /404.html {\n\t\troot /var/www/html;\n\t\tinternal;\n\t}|' "$CONF"
 fi
-if ! grep -q "X-Served-By" "$CONF"; then
-  sed -i "s|server_name _;|server_name _;\n\n\tadd_header X-Served-By $HOSTNAME;|" "$CONF"
-fi
+sed -i '/X-Served-By/d' "$CONF"
+sed -i 's|server_name _;|server_name _;\n\n\tadd_header X-Served-By $hostname;|' "$CONF"
 nginx -t && service nginx restart
