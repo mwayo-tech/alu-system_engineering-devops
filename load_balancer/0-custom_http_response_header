@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Configures nginx with a custom X-Served-By header (value: server hostname)
+apt-get update -y
+apt-get install -y nginx
+echo "Holberton School for the win!" > /var/www/html/index.html
+echo "Ceci n'est pas une page" > /var/www/html/404.html
+CONF=/etc/nginx/sites-available/default
+if ! grep -q "location /redirect_me" "$CONF"; then
+  sed -i 's|server_name _;|server_name _;\n\n\tlocation /redirect_me {\n\t\treturn 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;\n\t}|' "$CONF"
+fi
+if ! grep -q "error_page 404" "$CONF"; then
+  sed -i 's|server_name _;|server_name _;\n\n\terror_page 404 /404.html;\n\tlocation = /404.html {\n\t\troot /var/www/html;\n\t\tinternal;\n\t}|' "$CONF"
+fi
+if ! grep -q "X-Served-By" "$CONF"; then
+  sed -i "s|server_name _;|server_name _;\n\n\tadd_header X-Served-By $HOSTNAME;|" "$CONF"
+fi
+nginx -t && service nginx restart
